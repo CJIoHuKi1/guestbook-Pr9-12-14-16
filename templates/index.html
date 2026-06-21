@@ -1,117 +1,123 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Гостевая книга</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>📖 Гостевая книга</h1>
-        
-        <!-- Блок авторизации -->
-        <div class="auth-links">
-            {% if logged_in %}
-                <span>👋 Привет, <strong>{{ username }}</strong>!</span>
-                <span>|</span>
-                <a href="/logout">🚪 Выйти</a>
-            {% else %}
-                <span>🔒 Вы не авторизованы</span>
-                <span>|</span>
-                <a href="/login">🔐 Войти</a>
-                <span>(admin / 123)</span>
-            {% endif %}
-        </div>
-        
-        <!-- Уведомления -->
-        {% if session.pop('success', False) %}
-        <div class="notification success" id="notification">
-            ✅ Сообщение добавлено!
-        </div>
-        {% endif %}
-        
-        {% if session.pop('deleted', False) %}
-        <div class="notification info" id="notification">
-            🗑️ Сообщение удалено!
-        </div>
-        {% endif %}
-        
-        {% if session.pop('all_deleted', False) %}
-        <div class="notification warning" id="notification">
-            🗑️ Все сообщения удалены!
-        </div>
-        {% endif %}
-        
-        <!-- Счётчик сообщений -->
-        <div class="counter">
-            📊 Всего сообщений: <strong>{{ total_count }}</strong>
-        </div>
-        
-        <!-- Кнопки сортировки -->
-        <div class="sort-buttons">
-            <span>📅 Сортировка:</span>
-            <a href="/sort/newest" class="sort-link">🆕 Сначала новые</a>
-            <a href="/sort/oldest" class="sort-link">📅 Сначала старые</a>
-        </div>
-        
-        <h2>💬 Сообщения</h2>
-        
-        {% if messages %}
-            {% for msg in messages %}
-            <div class="message {% if loop.index0 % 2 == 0 %}message-even{% else %}message-odd{% endif %} {% if msg.created_at == today %}fresh{% endif %}">
-                <div class="message-header">
-                    <strong>👤 {{ msg.name }}</strong>
-                    <small>📅 {{ msg.created_at|date_russian }}</small>
-                    <!-- Кнопка удаления показывается ТОЛЬКО авторизованным -->
-                    {% if logged_in %}
-                        <a href="/delete/{{ msg.id }}" class="delete-btn" 
-                           onclick="return confirm('🗑️ Удалить сообщение от {{ msg.name }}?')">❌ Удалить</a>
-                    {% endif %}
-                </div>
-                <p>💭 {{ msg.message }}</p>
-            </div>
-            {% endfor %}
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Задание 2: Шапка с авторизацией -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-4">📖 Гостевая книга</h1>
+    <div>
+        {% if logged_in %}
+            <span class="me-2">👋 Привет, <strong>{{ username }}</strong>!</span>
+            <a href="/logout" class="btn btn-outline-danger btn-sm">🚪 Выйти</a>
         {% else %}
-            <p class="empty-message">📭 Пока нет сообщений. Будьте первым!</p>
-        {% endif %}
-        
-        <div class="add-form">
-            <h2>✍️ Оставить сообщение</h2>
-            
-            <form method="POST" action="/add">
-                <input type="text" name="name" placeholder="👤 Ваше имя" 
-                       class="{% if error %}input-error{% endif %}" required>
-                <textarea name="message" placeholder="💬 Ваше сообщение" rows="4" 
-                          class="{% if error %}input-error{% endif %}" required></textarea>
-                {% if error %}
-                    <div class="error-message">{{ error }}</div>
-                {% endif %}
-                <button type="submit">✉️ Отправить</button>
-            </form>
-        </div>
-        
-        <!-- Кнопка удаления всех сообщений (только для авторизованных) -->
-        {% if logged_in and total_count > 0 %}
-        <div class="delete-all">
-            <a href="/delete-all" class="delete-all-btn" 
-               onclick="return confirm('⚠️ Вы уверены, что хотите удалить ВСЕ сообщения? Это действие нельзя отменить!')">
-                🗑️ Удалить все сообщения
-            </a>
-        </div>
+            <a href="/login" class="btn btn-outline-primary btn-sm">🔐 Войти</a>
+            <span class="text-muted ms-1">(admin / 123)</span>
         {% endif %}
     </div>
-    
-    <script>
-        // Автоматическое скрытие уведомлений через 3 секунды
-        setTimeout(function() {
-            var notifications = document.querySelectorAll('.notification');
-            notifications.forEach(function(notification) {
-                notification.style.opacity = '0';
-                setTimeout(function() {
-                    if (notification) notification.style.display = 'none';
-                }, 500);
-            });
-        }, 3000);
-    </script>
-</body>
-</html>
+</div>
+
+<!-- Задание 3: Счётчик сообщений -->
+<div class="alert alert-info text-center" role="alert">
+    📊 Всего сообщений: <strong>{{ total_count }}</strong>
+</div>
+
+<!-- Кнопки сортировки -->
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    <span class="fw-bold me-2">📅 Сортировка:</span>
+    <a href="/sort/newest" class="btn btn-outline-primary btn-sm">🆕 Сначала новые</a>
+    <a href="/sort/oldest" class="btn btn-outline-primary btn-sm">📅 Сначала старые</a>
+    <a href="/" class="btn btn-outline-secondary btn-sm">🔄 Сбросить</a>
+</div>
+
+<h2 class="mb-3">💬 Сообщения</h2>
+
+<!-- Задание 4: Список сообщений в карточках -->
+{% if messages %}
+    {% for msg in messages %}
+    <div class="card mb-3 message-card {% if msg.created_at == today %}fresh-message{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title mb-1">👤 {{ msg.name }}</h5>
+                    <h6 class="card-subtitle text-muted">📅 {{ msg.created_at|date_russian }}</h6>
+                </div>
+                {% if logged_in %}
+                    <a href="/delete/{{ msg.id }}" 
+                       class="btn btn-danger btn-sm delete-btn"
+                       onclick="return confirm('🗑️ Удалить сообщение от {{ msg.name }}?')">
+                        ❌ Удалить
+                    </a>
+                {% endif %}
+            </div>
+            <p class="card-text mt-3">💭 {{ msg.message }}</p>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-secondary text-center" role="alert">
+        📭 Пока нет сообщений. Будьте первым!
+    </div>
+{% endif %}
+
+<!-- Задание 5: Форма добавления сообщения -->
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">✍️ Оставить сообщение</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/add">
+            <div class="mb-3">
+                <label for="name" class="form-label">👤 Ваше имя</label>
+                <input type="text" class="form-control {% if error %}is-invalid{% endif %}" 
+                       id="name" name="name" placeholder="Введите ваше имя" required>
+                {% if error %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">💬 Сообщение</label>
+                <textarea class="form-control {% if error %}is-invalid{% endif %}" 
+                          id="message" name="message" rows="4" 
+                          placeholder="Введите ваше сообщение" required></textarea>
+                {% if error %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">✉️ Отправить</button>
+        </form>
+    </div>
+</div>
+
+<!-- Кнопка удаления всех сообщений (только для админа) -->
+{% if logged_in and total_count > 0 %}
+<div class="mt-3">
+    <a href="/delete-all" 
+       class="btn btn-danger w-100"
+       onclick="return confirm('⚠️ Вы уверены, что хотите удалить ВСЕ сообщения? Это действие нельзя отменить!')">
+        🗑️ Удалить все сообщения
+    </a>
+</div>
+{% endif %}
+
+<!-- Уведомления (из сессии) -->
+{% if session.pop('success', False) %}
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        ✅ Сообщение добавлено!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+{% if session.pop('deleted', False) %}
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        🗑️ Сообщение удалено!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+{% if session.pop('all_deleted', False) %}
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        🗑️ Все сообщения удалены!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+{% endblock %}

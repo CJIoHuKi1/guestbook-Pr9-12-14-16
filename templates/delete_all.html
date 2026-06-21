@@ -1,23 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Удаление всех сообщений</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>⚠️ Удалить все сообщения?</h1>
-        
-        <div class="warning-message">
-            <p>Вы уверены, что хотите удалить <strong>{{ total_count }}</strong> сообщений?</p>
-            <p>Это действие нельзя отменить!</p>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="mb-0">⚠️ Удаление всех сообщений</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="alert alert-warning">
+                    <h5>Вы уверены, что хотите удалить все сообщения?</h5>
+                    <p class="mb-0">Всего сообщений: <strong>{{ total_count }}</strong></p>
+                </div>
+                <p class="text-danger">Это действие нельзя отменить!</p>
+                <form method="POST" action="/delete-all-confirm" class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger">🗑️ Да, удалить всё</button>
+                    <a href="/" class="btn btn-secondary">❌ Отмена</a>
+                </form>
+            </div>
         </div>
-        
-        <form method="POST" action="/delete-all-confirm" class="confirm-form">
-            <button type="submit" class="danger-btn">🗑️ Да, удалить всё</button>
-            <a href="/" class="cancel-btn">❌ Отмена</a>
-        </form>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

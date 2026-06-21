@@ -1,34 +1,42 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Вход в гостевую книгу</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>🔐 Вход в гостевую книгу</h1>
-        
-        {% if error %}
-            <div class="error-message" style="text-align: center; margin-bottom: 20px;">
-                {{ error }}
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Задание 6: Страница входа с Bootstrap -->
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">🔐 Вход в гостевую книгу</h4>
             </div>
-        {% endif %}
-        
-        <form method="POST" class="login-form">
-            <input type="text" name="username" placeholder="👤 Логин" required autofocus>
-            <input type="password" name="password" placeholder="🔒 Пароль" required>
-            <button type="submit">🚪 Войти</button>
-        </form>
-        
-        <div style="text-align: center; margin-top: 20px; padding: 10px; background: #e9ecef; border-radius: 5px;">
-            <strong>📝 Тестовые данные:</strong><br>
-            Логин: <strong>admin</strong> | Пароль: <strong>123</strong>
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">👤 Логин</label>
+                        <input type="text" class="form-control" id="username" 
+                               name="username" placeholder="Введите логин" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">🔒 Пароль</label>
+                        <input type="password" class="form-control" id="password" 
+                               name="password" placeholder="Введите пароль" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">🚪 Войти</button>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>📝 Тестовые данные: <strong>admin</strong> / <strong>123</strong></small>
+            </div>
         </div>
-        
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="/">← На главную</a>
-        </p>
+        <div class="text-center mt-3">
+            <a href="/" class="text-decoration-none">← На главную</a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
